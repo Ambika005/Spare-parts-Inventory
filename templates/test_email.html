@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-header">
+  <h1 class="dashboard-title">
+    <i class="fas fa-envelope-open me-3"></i>Test Email Configuration
+  </h1>
+  <p class="dashboard-subtitle">Send a test email to verify Gmail SMTP configuration</p>
+</div>
+
+<div class="row">
+  <div class="col-md-8 mx-auto">
+    <div class="card dashboard-card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-cog me-2"></i>Email Configuration Test
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          <strong>Important:</strong> Make sure you have configured your Gmail credentials correctly. 
+          Need help? <a href="{% url 'gmail_setup_guide' %}" class="alert-link">View Gmail Setup Guide</a>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-primary">Current Configuration:</h6>
+          <ul class="list-unstyled">
+            <li><strong>Email Host:</strong> smtp.gmail.com</li>
+            <li><strong>Port:</strong> 587</li>
+            <li><strong>TLS:</strong> Enabled</li>
+            <li><strong>From Email:</strong> {{ request.user.email|default:"Not configured" }}</li>
+          </ul>
+        </div>
+
+        <div class="mb-4">
+          <h6 class="text-primary">Recipients:</h6>
+          {% if admin_emails %}
+            <ul class="list-unstyled">
+              {% for email in admin_emails %}
+                <li><i class="fas fa-user text-success me-2"></i>{{ email }}</li>
+              {% endfor %}
+            </ul>
+            <p class="text-muted small">Emails are automatically retrieved from users in the Admin group.</p>
+          {% else %}
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>No admin email addresses found!</strong> 
+              Please ensure admin users have email addresses configured in their profiles.
+            </div>
+          {% endif %}
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-paper-plane me-2"></i>Send Test Email
+            </button>
+            <a href="{% url 'gmail_setup_guide' %}" class="btn btn-info">
+              <i class="fas fa-book me-2"></i>Gmail Setup Guide
+            </a>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+          </div>
+        </form>
+
+        <div class="mt-4">
+          <h6 class="text-warning">Quick Setup Checklist:</h6>
+          <div class="alert alert-light">
+            <ol class="mb-0">
+              <li>✅ Enable 2-factor authentication on your Gmail account</li>
+              <li>✅ Generate Gmail App Password (not your regular password!)</li>
+              <li>✅ Set environment variables in .env file</li>
+              <li>✅ Restart Django server after configuration changes</li>
+              <li>✅ Ensure admin users have email addresses in profiles</li>
+            </ol>
+            <div class="text-center mt-3">
+              <a href="{% url 'gmail_setup_guide' %}" class="btn btn-sm btn-outline-primary">
+                View Detailed Setup Instructions
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

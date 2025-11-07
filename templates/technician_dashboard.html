@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-header">
+  <h1 class="dashboard-title">
+    <i class="fas fa-tools me-3"></i>Technician Dashboard
+  </h1>
+  <p class="dashboard-subtitle">Parts inventory management and stock updates</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="stats-card">
+      <span class="stats-number">{{ total_parts }}</span>
+      <span class="stats-label">Available Parts</span>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stats-card">
+      <span class="stats-number text-warning">{{ low_stock_count }}</span>
+      <span class="stats-label">Need Restock</span>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stats-card">
+      <span class="stats-number text-success">{{ well_stocked }}</span>
+      <span class="stats-label">Well Stocked</span>
+    </div>
+  </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="action-buttons">
+  <a class="btn btn-info" href="{% url 'export_csv' %}">
+    <i class="fas fa-file-csv me-2"></i>Download Report
+  </a>
+</div>
+
+<!-- Low Stock Alert -->
+{% if low_parts %}
+<div class="alert alert-warning">
+  <i class="fas fa-exclamation-triangle me-2"></i>
+  <strong>Urgent Attention Required!</strong> {{ low_stock_count }} part{{ low_stock_count|pluralize }} need{{ low_stock_count|pluralize:"s," }} immediate restocking.
+</div>
+{% endif %}
+
+<!-- Parts Table -->
+<div class="card dashboard-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <i class="fas fa-clipboard-list me-2"></i>Parts Inventory
+    </h5>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th><i class="fas fa-cog me-2"></i>Part Name</th>
+            <th><i class="fas fa-boxes me-2"></i>Current Stock</th>
+            <th><i class="fas fa-chart-line me-2"></i>Min. Required</th>
+            <th><i class="fas fa-truck me-2"></i>Supplier</th>
+            <th><i class="fas fa-edit me-2"></i>Quick Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in parts %}
+          <tr class="{% if p.is_low %}table-warning low-stock-indicator{% endif %}">
+            <td class="part-name-cell">
+              <div class="part-name-container">
+                <div class="part-name-text">{{ p.part_name }}</div>
+                {% if p.is_low %}
+                  <span class="badge bg-danger text-white low-stock-badge">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Low Stock
+                  </span>
+                {% else %}
+                  <span class="badge bg-success low-stock-badge">
+                    <i class="fas fa-check me-1"></i>OK
+                  </span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <span class="badge {% if p.is_low %}bg-warning text-dark{% else %}bg-success{% endif %} fs-6">
+                {{ p.quantity }}
+              </span>
+            </td>
+            <td>
+              <span class="text-muted">{{ p.threshold }}</span>
+            </td>
+            <td>{{ p.supplier|default:"Not specified" }}</td>
+            <td>
+              <a class="btn btn-sm btn-primary" href="{% url 'spare_update_quantity' p.pk %}">
+                <i class="fas fa-edit me-1"></i>Update Stock
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-4">
+              <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+              <p class="text-muted">No spare parts available in the system.</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Reference -->
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="card-title">
+          <i class="fas fa-info-circle me-2"></i>Quick Reference
+        </h6>
+        <div class="row">
+          <div class="col-md-4">
+            <p><i class="fas fa-exclamation-triangle text-warning me-2"></i>Yellow rows indicate low stock items</p>
+          </div>
+          <div class="col-md-4">
+            <p><i class="fas fa-edit text-primary me-2"></i>Click "Update Stock" to modify quantities</p>
+          </div>
+          <div class="col-md-4">
+            <p><i class="fas fa-download text-info me-2"></i>Export reports for record keeping</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

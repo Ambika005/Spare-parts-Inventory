@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-header">
+  <h1 class="dashboard-title">
+    <i class="fas fa-file-import me-3"></i>Import Spare Parts
+  </h1>
+  <p class="dashboard-subtitle">Upload CSV, Excel, or JSON file to bulk import spare parts into the system</p>
+</div>
+
+<div class="row">
+  <div class="col-md-8 mx-auto">
+    <div class="card dashboard-card">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-upload me-2"></i>File Upload
+        </h5>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" class="import-form">
+          {% csrf_token %}
+          
+          <div class="mb-4">
+            <label for="{{ form.file.id_for_label }}" class="form-label">
+              <i class="fas fa-file me-2"></i>Select File to Import
+            </label>
+            {{ form.file }}
+            {% if form.file.errors %}
+              <div class="text-danger mt-2">
+                {% for error in form.file.errors %}
+                  <small>{{ error }}</small>
+                {% endfor %}
+              </div>
+            {% endif %}
+            <div class="form-text">
+              {{ form.file.help_text }}
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+              <i class="fas fa-upload me-2"></i>Import Data
+            </button>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Instructions Card -->
+    <div class="card dashboard-card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-info-circle me-2"></i>Import Instructions
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-primary"><i class="fas fa-table me-2"></i>Required Format</h6>
+            <p>Your file must contain the following columns (case-insensitive):</p>
+            <ul class="list-unstyled">
+              <li><i class="fas fa-check text-success me-2"></i><strong>Part Name</strong> - Name of the spare part</li>
+              <li><i class="fas fa-check text-success me-2"></i><strong>Quantity</strong> - Current stock quantity (number)</li>
+              <li><i class="fas fa-check text-success me-2"></i><strong>Threshold</strong> - Low stock threshold (number)</li>
+              <li><i class="fas fa-check text-success me-2"></i><strong>Supplier</strong> - Supplier name (optional)</li>
+            </ul>
+            
+            <h6 class="text-primary mt-3"><i class="fas fa-file me-2"></i>Supported Formats</h6>
+            <ul class="list-unstyled">
+              <li><i class="fas fa-file-csv text-success me-2"></i><strong>CSV (.csv)</strong> - Comma-separated values</li>
+              <li><i class="fas fa-file-excel text-success me-2"></i><strong>Excel (.xlsx, .xls)</strong> - Microsoft Excel files</li>
+              <li><i class="fas fa-code text-success me-2"></i><strong>JSON (.json)</strong> - JavaScript Object Notation</li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-primary"><i class="fas fa-exclamation-triangle me-2"></i>Important Notes</h6>
+            <ul class="list-unstyled">
+              <li><i class="fas fa-info text-info me-2"></i>Existing parts will be <strong>updated</strong></li>
+              <li><i class="fas fa-info text-info me-2"></i>New parts will be <strong>created</strong></li>
+              <li><i class="fas fa-info text-info me-2"></i>Quantity and threshold must be non-negative</li>
+              <li><i class="fas fa-info text-info me-2"></i>Maximum file size: 5MB (CSV/JSON), 10MB (Excel)</li>
+              <li><i class="fas fa-info text-info me-2"></i>Empty rows will be skipped</li>
+              <li><i class="fas fa-info text-info me-2"></i>Column names are case-insensitive</li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Sample Data Table -->
+        <div class="mt-4">
+          <h6 class="text-primary"><i class="fas fa-table me-2"></i>Sample Data Format</h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+              <thead class="table-dark">
+                <tr>
+                  <th>Part Name</th>
+                  <th>Quantity</th>
+                  <th>Threshold</th>
+                  <th>Supplier</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Bearing 101</td>
+                  <td>50</td>
+                  <td>10</td>
+                  <td>ABC Supplies</td>
+                </tr>
+                <tr>
+                  <td>Filter 202</td>
+                  <td>25</td>
+                  <td>5</td>
+                  <td>XYZ Corp</td>
+                </tr>
+                <tr>
+                  <td>Gasket 303</td>
+                  <td>100</td>
+                  <td>20</td>
+                  <td>Quality Parts</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Format Examples -->
+        <div class="mt-4">
+          <h6 class="text-primary"><i class="fas fa-code me-2"></i>Format Examples</h6>
+          
+          <!-- JSON Format Example -->
+          <div class="mt-3">
+            <h6 class="text-secondary">JSON Format:</h6>
+            <pre class="bg-light p-3 rounded"><code>[
+  {
+    "Part Name": "Bearing 101",
+    "Quantity": 50,
+    "Threshold": 10,
+    "Supplier": "ABC Supplies"
+  },
+  {
+    "Part Name": "Filter 202", 
+    "Quantity": 25,
+    "Threshold": 5,
+    "Supplier": "XYZ Corp"
+  }
+]</code></pre>
+          </div>
+
+          <!-- Alternative JSON with wrapper -->
+          <div class="mt-3">
+            <h6 class="text-secondary">Alternative JSON Format (with wrapper):</h6>
+            <pre class="bg-light p-3 rounded"><code>{
+  "parts": [
+    {
+      "Part Name": "Gasket 303",
+      "Quantity": 100,
+      "Threshold": 20,
+      "Supplier": "Quality Parts"
+    }
+  ]
+}</code></pre>
+          </div>
+        </div>
+
+        <!-- Download Sample Files -->
+        <div class="mt-4">
+          <h6 class="text-primary"><i class="fas fa-download me-2"></i>Sample Files</h6>
+          <p>Download these sample files to see the correct format:</p>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-outline-success btn-sm" onclick="downloadSampleCSV()">
+              <i class="fas fa-file-csv me-2"></i>Download Sample CSV
+            </button>
+            <button class="btn btn-outline-info btn-sm" onclick="downloadSampleExcel()">
+              <i class="fas fa-file-excel me-2"></i>Download Sample Excel (CSV format)
+            </button>
+            <button class="btn btn-outline-warning btn-sm" onclick="downloadSampleJSON()">
+              <i class="fas fa-code me-2"></i>Download Sample JSON
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function downloadSampleCSV() {
+  const csvContent = "Part Name,Quantity,Threshold,Supplier\nBearing 101,50,10,ABC Supplies\nFilter 202,25,5,XYZ Corp\nGasket 303,100,20,Quality Parts";
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sample_spare_parts.csv';
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
+function downloadSampleExcel() {
+  // For Excel, we'll download CSV that can be opened in Excel
+  const csvContent = "Part Name,Quantity,Threshold,Supplier\nBearing 101,50,10,ABC Supplies\nFilter 202,25,5,XYZ Corp\nGasket 303,100,20,Quality Parts";
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sample_spare_parts_for_excel.csv';
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
+function downloadSampleJSON() {
+  const jsonContent = JSON.stringify([
+    {
+      "Part Name": "Bearing 101",
+      "Quantity": 50,
+      "Threshold": 10,
+      "Supplier": "ABC Supplies"
+    },
+    {
+      "Part Name": "Filter 202",
+      "Quantity": 25,
+      "Threshold": 5,
+      "Supplier": "XYZ Corp"
+    },
+    {
+      "Part Name": "Gasket 303",
+      "Quantity": 100,
+      "Threshold": 20,
+      "Supplier": "Quality Parts"
+    }
+  ], null, 2);
+  
+  const blob = new Blob([jsonContent], { type: 'application/json' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sample_spare_parts.json';
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+</script>
+
+<style>
+.import-form {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 10px;
+  border: 2px dashed #dee2e6;
+  transition: border-color 0.3s ease;
+}
+
+.import-form:hover {
+  border-color: #007bff;
+}
+
+.import-form input[type="file"] {
+  border: 2px solid #e9ecef;
+  background: white;
+}
+
+.import-form input[type="file"]:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+</style>
+{% endblock %}

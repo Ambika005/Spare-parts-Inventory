@@ -1,0 +1,201 @@
+╔══════════════════════════════════════════════════════════════════╗
+║       🚀 SIMPLE EMAIL TESTING - QUICK START GUIDE 🚀            ║
+╚══════════════════════════════════════════════════════════════════╝
+
+✅ WHAT'S ALREADY CONFIGURED:
+
+1. Gmail SMTP Settings (in settings.py):
+   ✓ EMAIL_HOST = 'smtp.gmail.com'
+   ✓ EMAIL_PORT = 587
+   ✓ EMAIL_USE_TLS = True
+   ✓ Reads from .env file automatically
+
+2. Simple Test View Created:
+   ✓ Function: send_low_stock_email()
+   ✓ Sends email to: ambikaselvaraj22@gmail.com
+   ✓ Shows success/error page
+   ✓ No login required for testing
+
+3. URL Route Added:
+   ✓ http://localhost:8000/send-low-stock-email/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 WHAT YOU NEED TO DO (3 STEPS):
+
+Step 1: Get Gmail App Password
+────────────────────────────────────
+   a) Go to: https://myaccount.google.com/security
+   b) Enable "2-Step Verification" (if not enabled)
+   c) Click "App passwords"
+   d) Select: Mail → Other (Custom name)
+   e) Name it: "Spare Parts Inventory"
+   f) Click "Generate"
+   g) COPY the 16-character password (e.g., abcdefghijklmnop)
+
+Step 2: Update .env File
+────────────────────────────────────
+   Open: C:\Users\shanm\Desktop\Inventory\.env
+   
+   Current line 5:
+   EMAIL_HOST_PASSWORD=
+   
+   Change to:
+   EMAIL_HOST_PASSWORD=abcdefghijklmnop
+   
+   (Replace with YOUR actual 16-character App Password - no spaces!)
+   
+   Save the file (Ctrl + S)
+
+Step 3: Restart Django & Test
+────────────────────────────────────
+   In PowerShell:
+   1. Stop Django: Ctrl + C
+   2. Start Django: python manage.py runserver
+   3. Open browser: http://localhost:8000/send-low-stock-email/
+   4. Check your inbox: ambikaselvaraj22@gmail.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 HOW IT WORKS:
+
+The View Function (views.py):
+┌─────────────────────────────────────────────────┐
+│ def send_low_stock_email(request):              │
+│     from django.core.mail import send_mail     │
+│                                                 │
+│     send_mail(                                  │
+│         subject='Low Stock Alert',              │
+│         message='Parts are running low...',     │
+│         from_email=settings.EMAIL_HOST_USER,    │
+│         recipient_list=['ambikaselvaraj22@      │
+│                         gmail.com'],            │
+│         fail_silently=False,                    │
+│     )                                           │
+│                                                 │
+│     return "Email sent successfully!"           │
+└─────────────────────────────────────────────────┘
+
+Settings (settings.py):
+┌─────────────────────────────────────────────────┐
+│ EMAIL_BACKEND = 'django.core.mail.backends.    │
+│                  smtp.EmailBackend'             │
+│ EMAIL_HOST = 'smtp.gmail.com'                   │
+│ EMAIL_PORT = 587                                │
+│ EMAIL_USE_TLS = True                            │
+│ EMAIL_HOST_USER = os.environ.get(              │
+│                   'EMAIL_HOST_USER')            │
+│ EMAIL_HOST_PASSWORD = os.environ.get(          │
+│                       'EMAIL_HOST_PASSWORD')    │
+└─────────────────────────────────────────────────┘
+
+Environment Variables (.env):
+┌─────────────────────────────────────────────────┐
+│ EMAIL_HOST_USER=ambikaselvaraj22@gmail.com     │
+│ EMAIL_HOST_PASSWORD=your_app_password_here     │
+│ DEFAULT_FROM_EMAIL=ambikaselvaraj22@gmail.com  │
+└─────────────────────────────────────────────────┘
+
+URL Route (urls.py):
+┌─────────────────────────────────────────────────┐
+│ path('send-low-stock-email/',                   │
+│      views.send_low_stock_email,                │
+│      name='send_low_stock_email'),              │
+└─────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔗 QUICK LINKS:
+
+Test Email (Simple):
+→ http://localhost:8000/send-low-stock-email/
+
+Gmail Setup Guide (Detailed):
+→ http://localhost:8000/gmail-setup-guide/
+
+Gmail Security Settings:
+→ https://myaccount.google.com/security
+
+Admin Dashboard:
+→ http://localhost:8000/admin_dashboard/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📧 WHAT THE EMAIL LOOKS LIKE:
+
+Subject: 🔔 Low Stock Alert - Spare Parts Inventory
+
+Body:
+   Hello!
+   
+   ALERT: The following parts are running low on stock:
+   
+   📦 Part Name: Brake Pads
+      Current Quantity: 5 units
+      Threshold: 10 units
+      Status: ⚠️ LOW STOCK
+   
+   📦 Part Name: Oil Filter
+      Current Quantity: 3 units
+      Threshold: 15 units
+      Status: ⚠️ LOW STOCK
+   
+   Please restock these items as soon as possible.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ SUCCESS PAGE:
+
+When email is sent successfully, you'll see:
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│                      ✅                         │
+│                                                 │
+│           Email Sent Successfully!              │
+│                                                 │
+│   A low stock alert email has been sent to:    │
+│                                                 │
+│        ambikaselvaraj22@gmail.com              │
+│                                                 │
+│   Check your inbox to verify delivery.         │
+│                                                 │
+│           [Back to Dashboard]                   │
+│                                                 │
+└─────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ COMMON ERRORS & SOLUTIONS:
+
+Error: "535 Username and Password not accepted"
+Solution: You need Gmail App Password (not regular password!)
+         → Follow Step 1 above to generate App Password
+
+Error: "Configuration issues found"
+Solution: Add App Password to .env file and restart Django
+
+Error: "Connection refused"
+Solution: Check internet connection and firewall settings
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 CHECKLIST:
+
+□ Enable 2-Factor Authentication on Gmail
+□ Generate Gmail App Password
+□ Add App Password to .env file (line 5)
+□ Save .env file
+□ Restart Django server
+□ Visit: http://localhost:8000/send-low-stock-email/
+□ Check email inbox
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 THAT'S IT! 
+
+Once you complete the 3 steps above and visit the URL, 
+you'll see "Email sent successfully!" and receive the email!
+
+Need help? Visit: http://localhost:8000/gmail-setup-guide/
+
+╚══════════════════════════════════════════════════════════════════╝

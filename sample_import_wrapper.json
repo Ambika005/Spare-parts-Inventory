@@ -1,0 +1,22 @@
+{
+  "parts": [
+    {
+      "Part Name": "Rubber Gasket RG200",
+      "Quantity": 80,
+      "Threshold": 40,
+      "Supplier": "Seal Masters"
+    },
+    {
+      "Part Name": "Pressure Gauge PG300",
+      "Quantity": 12,
+      "Threshold": 18,
+      "Supplier": "Instrument Co"
+    },
+    {
+      "Part Name": "Filter Element FE400",
+      "Quantity": 35,
+      "Threshold": 20,
+      "Supplier": "Filter Tech"
+    }
+  ]
+}

@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+
+{% block title %}Gmail Setup Guide{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-envelope-open-text me-2"></i>
+                        Gmail Setup Guide for Email Alerts
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>Important:</strong> To use Gmail for email alerts, you need to set up an App Password. 
+                        Your regular Gmail password will not work with this application.
+                    </div>
+
+                    <!-- Step 1: Enable 2FA -->
+                    <div class="setup-step mb-4">
+                        <h4 class="text-primary">
+                            <span class="badge bg-primary me-2">1</span>
+                            Enable 2-Factor Authentication
+                        </h4>
+                        <div class="ms-4">
+                            <ol>
+                                <li>Go to your <a href="https://myaccount.google.com/" target="_blank" class="text-decoration-none">Google Account</a></li>
+                                <li>Click on <strong>"Security"</strong> in the left sidebar</li>
+                                <li>Under "Signing in to Google", click <strong>"2-Step Verification"</strong></li>
+                                <li>Follow the prompts to enable 2-Factor Authentication</li>
+                                <li>Verify with your phone number or authenticator app</li>
+                            </ol>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Note:</strong> 2-Factor Authentication is required to create App Passwords.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Create App Password -->
+                    <div class="setup-step mb-4">
+                        <h4 class="text-primary">
+                            <span class="badge bg-primary me-2">2</span>
+                            Create Gmail App Password
+                        </h4>
+                        <div class="ms-4">
+                            <ol>
+                                <li>Still in Google Account Security settings</li>
+                                <li>Under "Signing in to Google", click <strong>"App passwords"</strong></li>
+                                <li>You may need to enter your password again</li>
+                                <li>Select app: <strong>"Mail"</strong></li>
+                                <li>Select device: <strong>"Other (Custom name)"</strong></li>
+                                <li>Enter name: <strong>"Spare Parts Inventory"</strong></li>
+                                <li>Click <strong>"Generate"</strong></li>
+                                <li>Copy the 16-character password (e.g., "abcd efgh ijkl mnop")</li>
+                            </ol>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Important:</strong> Save this App Password immediately! You won't be able to see it again.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Configure Environment Variables -->
+                    <div class="setup-step mb-4">
+                        <h4 class="text-primary">
+                            <span class="badge bg-primary me-2">3</span>
+                            Configure Environment Variables
+                        </h4>
+                        <div class="ms-4">
+                            <p>Create or update your <code>.env</code> file in the project root with:</p>
+                            <div class="bg-dark text-light p-3 rounded">
+                                <pre><code># Gmail Configuration
+EMAIL_HOST_USER=your_email@gmail.com
+EMAIL_HOST_PASSWORD=your_16_character_app_password
+DEFAULT_FROM_EMAIL=your_email@gmail.com</code></pre>
+                            </div>
+                            <div class="mt-3">
+                                <h5>Example:</h5>
+                                <div class="bg-light p-3 rounded border">
+                                    <pre><code># Example - Replace with your actual values
+EMAIL_HOST_USER=john.doe@gmail.com
+EMAIL_HOST_PASSWORD=abcdefghijklmnop
+DEFAULT_FROM_EMAIL=john.doe@gmail.com</code></pre>
+                                </div>
+                            </div>
+                            <div class="alert alert-danger mt-3">
+                                <i class="fas fa-shield-alt"></i>
+                                <strong>Security:</strong> Never commit your .env file to version control! 
+                                Add .env to your .gitignore file.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Test Configuration -->
+                    <div class="setup-step mb-4">
+                        <h4 class="text-primary">
+                            <span class="badge bg-primary me-2">4</span>
+                            Test Email Configuration
+                        </h4>
+                        <div class="ms-4">
+                            <ol>
+                                <li>Restart your Django development server</li>
+                                <li>Go to Admin Profile → <a href="{% url 'admin_profile' %}" class="text-decoration-none">Email Settings</a></li>
+                                <li>Click <strong>"Send Test Email"</strong></li>
+                                <li>Check your inbox for the test email</li>
+                            </ol>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'test_email' %}" class="btn btn-success btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Test Email Configuration Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Troubleshooting -->
+                    <div class="setup-step mb-4">
+                        <h4 class="text-danger">
+                            <i class="fas fa-tools me-2"></i>
+                            Troubleshooting Common Issues
+                        </h4>
+                        <div class="ms-4">
+                            <div class="accordion" id="troubleshootingAccordion">
+                                <!-- Error 535 -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="error535">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse535">
+                                            Error 535: Username and Password not accepted
+                                        </button>
+                                    </h2>
+                                    <div id="collapse535" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                        <div class="accordion-body">
+                                            <strong>Causes:</strong>
+                                            <ul>
+                                                <li>Using regular Gmail password instead of App Password</li>
+                                                <li>App Password not generated correctly</li>
+                                                <li>2-Factor Authentication not enabled</li>
+                                                <li>Incorrect email address in EMAIL_HOST_USER</li>
+                                            </ul>
+                                            <strong>Solutions:</strong>
+                                            <ul>
+                                                <li>Double-check your App Password (16 characters, no spaces)</li>
+                                                <li>Ensure 2FA is enabled on your Gmail account</li>
+                                                <li>Verify EMAIL_HOST_USER matches your Gmail address exactly</li>
+                                                <li>Generate a new App Password if needed</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Connection Issues -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="connection">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConnection">
+                                            Connection Refused or Timeout Errors
+                                        </button>
+                                    </h2>
+                                    <div id="collapseConnection" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                        <div class="accordion-body">
+                                            <strong>Possible Causes:</strong>
+                                            <ul>
+                                                <li>Firewall blocking port 587</li>
+                                                <li>Corporate network restrictions</li>
+                                                <li>Internet connectivity issues</li>
+                                            </ul>
+                                            <strong>Solutions:</strong>
+                                            <ul>
+                                                <li>Check your internet connection</li>
+                                                <li>Try from a different network</li>
+                                                <li>Contact IT if on corporate network</li>
+                                                <li>Temporarily disable firewall for testing</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Environment Variables -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="envvars">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnvvars">
+                                            Environment Variables Not Loading
+                                        </button>
+                                    </h2>
+                                    <div id="collapseEnvvars" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                        <div class="accordion-body">
+                                            <strong>Check:</strong>
+                                            <ul>
+                                                <li>.env file is in the project root directory</li>
+                                                <li>No spaces around the = sign in .env file</li>
+                                                <li>Django server was restarted after .env changes</li>
+                                                <li>python-dotenv is installed: <code>pip install python-dotenv</code></li>
+                                            </ul>
+                                            <strong>Verify settings.py includes:</strong>
+                                            <pre><code>from dotenv import load_dotenv
+load_dotenv()</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Configuration Status -->
+                    <div class="setup-step">
+                        <h4 class="text-info">
+                            <i class="fas fa-cog me-2"></i>
+                            Current Configuration Status
+                        </h4>
+                        <div class="ms-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-sm table-bordered">
+                                        <tr>
+                                            <td><strong>EMAIL_HOST:</strong></td>
+                                            <td>{{ email_config.host|default:"Not configured" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>EMAIL_PORT:</strong></td>
+                                            <td>{{ email_config.port|default:"Not configured" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>EMAIL_USE_TLS:</strong></td>
+                                            <td>{{ email_config.use_tls|yesno:"Yes,No" }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-sm table-bordered">
+                                        <tr>
+                                            <td><strong>EMAIL_HOST_USER:</strong></td>
+                                            <td>
+                                                {% if email_config.host_user %}
+                                                    {{ email_config.host_user|slice:":3" }}***@{{ email_config.host_user|slice:"5:" }}
+                                                {% else %}
+                                                    <span class="text-danger">Not configured</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>EMAIL_HOST_PASSWORD:</strong></td>
+                                            <td>
+                                                {% if email_config.host_password %}
+                                                    <span class="text-success">Configured (hidden)</span>
+                                                {% else %}
+                                                    <span class="text-danger">Not configured</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>DEFAULT_FROM_EMAIL:</strong></td>
+                                            <td>{{ email_config.from_email|default:"Not configured" }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <a href="{% url 'admin_profile' %}" class="btn btn-primary me-3">
+                            <i class="fas fa-user-cog me-2"></i>
+                            Go to Admin Profile
+                        </a>
+                        <a href="{% url 'test_email' %}" class="btn btn-success me-3">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Test Email Now
+                        </a>
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.setup-step {
+    border-left: 4px solid #0d6efd;
+    padding-left: 1rem;
+}
+
+.setup-step h4 {
+    margin-bottom: 1rem;
+}
+
+.badge {
+    font-size: 1rem;
+}
+
+pre {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #fff3cd;
+}
+</style>
+{% endblock %}

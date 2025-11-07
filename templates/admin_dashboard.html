@@ -1,0 +1,960 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-header">
+  <h1 class="dashboard-title">
+    <i class="fas fa-user-shield me-3"></i>Admin Dashboard
+  </h1>
+  <p class="dashboard-subtitle">Complete inventory management and system administration</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="stats-card">
+      <span class="stats-number">{{ total_parts }}</span>
+      <span class="stats-label">Total Parts</span>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stats-card">
+      <span class="stats-number text-warning">{{ low_stock }}</span>
+      <span class="stats-label">Low Stock Alert</span>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stats-card">
+      <span class="stats-number text-success">{{ well_stocked }}</span>
+      <span class="stats-label">Well Stocked</span>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stats-card">
+      <span class="stats-number text-info">{{ total_parts }}</span>
+      <span class="stats-label">Active Items</span>
+    </div>
+  </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="action-buttons">
+  <a class="btn btn-success" href="{% url 'spare_add' %}">
+    <i class="fas fa-plus me-2"></i>Add New Part
+  </a>
+  <a class="btn btn-primary" href="{% url 'import_spare_parts' %}">
+    <i class="fas fa-file-import me-2"></i>Import Spare Parts
+  </a>
+  <a class="btn btn-info" href="{% url 'export_csv' %}">
+    <i class="fas fa-file-csv me-2"></i>Export CSV
+  </a>
+  <a class="btn btn-warning" href="{% url 'export_low_stock_csv' %}">
+    <i class="fas fa-file-download me-2"></i>Download Low Stock CSV
+  </a>
+  <a class="btn btn-secondary" href="{% url 'export_pdf' %}">
+    <i class="fas fa-file-pdf me-2"></i>Export PDF
+  </a>
+  <a class="btn btn-outline-info" href="{% url 'test_email' %}">
+    <i class="fas fa-envelope-open me-2"></i>Test Email
+  </a>
+  <a class="btn btn-outline-primary" href="{% url 'admin_profile' %}">
+    <i class="fas fa-user-cog me-2"></i>Profile Settings
+  </a>
+</div>
+
+<!-- Alert Notifications -->
+{% if alert_count > 0 %}
+<div class="alert alert-danger">
+  <i class="fas fa-bell me-2"></i>
+  <strong>Email Alerts Active!</strong> {{ alert_count }} email alert{{ alert_count|pluralize }} {{ alert_count|pluralize:"has,have" }} been sent for low stock items.
+</div>
+{% endif %}
+
+{% if low_stock > 0 %}
+<div class="alert alert-warning">
+  <i class="fas fa-exclamation-triangle me-2"></i>
+  <strong>Low Stock Alert!</strong> {{ low_stock }} part{{ low_stock|pluralize }} need{{ low_stock|pluralize:"s," }} restocking.
+</div>
+{% endif %}
+
+<!-- Analytics Dashboard Section -->
+<div class="card dashboard-card mb-4">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">
+      <i class="fas fa-chart-line me-2"></i>Interactive Analytics Dashboard
+    </h5>
+  </div>
+  <div class="card-body">
+    <!-- Filters -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <label for="supplierFilter" class="form-label"><i class="fas fa-filter me-2"></i>Filter by Supplier</label>
+        <select id="supplierFilter" class="form-select">
+          <option value="all">All Suppliers</option>
+          {% for supplier in suppliers %}
+            <option value="{{ supplier }}">{{ supplier }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label for="statusFilter" class="form-label"><i class="fas fa-filter me-2"></i>Filter by Status</label>
+        <select id="statusFilter" class="form-select">
+          <option value="all">All Status</option>
+          <option value="low">Low Stock Only</option>
+          <option value="normal">Well Stocked Only</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">&nbsp;</label>
+        <button id="resetFilters" class="btn btn-secondary w-100">
+          <i class="fas fa-redo me-2"></i>Reset Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- AI Insights Section -->
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="alert alert-light border" id="aiInsights" style="display: none;">
+          <h6 class="alert-heading mb-3">
+            <i class="fas fa-lightbulb text-warning me-2"></i>
+            <strong>Smart Analytics Insights</strong>
+          </h6>
+          <div id="insightsContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards Row -->
+    <div class="row mb-4" id="kpiCards">
+      <div class="col-md-3">
+        <div class="kpi-card bg-primary">
+          <div class="kpi-icon"><i class="fas fa-boxes"></i></div>
+          <div class="kpi-value" id="kpiTotalParts">{{ total_parts }}</div>
+          <div class="kpi-label">Total Parts</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="kpi-card bg-danger">
+          <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="kpi-value" id="kpiLowStock">{{ low_stock }}</div>
+          <div class="kpi-label">Low Stock</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="kpi-card bg-success">
+          <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
+          <div class="kpi-value" id="kpiWellStocked">{{ well_stocked }}</div>
+          <div class="kpi-label">Well Stocked</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="kpi-card bg-info">
+          <div class="kpi-icon"><i class="fas fa-percentage"></i></div>
+          <div class="kpi-value" id="kpiHealthPercentage">
+            {% if total_parts > 0 %}
+              {% widthratio well_stocked total_parts 100 %}%
+            {% else %}
+              0%
+            {% endif %}
+          </div>
+          <div class="kpi-label">Inventory Health</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+      <div class="col-md-8">
+        <div class="card chart-card">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Stock vs Threshold (Top 10)</h6>
+          </div>
+          <div class="card-body">
+            <canvas id="stockChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card chart-card">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Supplier Distribution</h6>
+          </div>
+          <div class="card-body">
+            <canvas id="supplierChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Supplier Performance Chart -->
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="card chart-card">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Supplier Performance (Total Quantities)</h6>
+          </div>
+          <div class="card-body">
+            <canvas id="supplierPerformanceChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Data Table -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card chart-card">
+          <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-table me-2"></i>Detailed Parts View</h6>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover" id="analyticsTable">
+                <thead>
+                  <tr>
+                    <th>Part Name</th>
+                    <th>Quantity</th>
+                    <th>Threshold</th>
+                    <th>Supplier</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="analyticsTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Alerts Summary -->
+{% if recent_alerts %}
+<div class="card dashboard-card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <i class="fas fa-envelope me-2"></i>Recent Email Alerts (Last 3 Days)
+    </h5>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Part Name</th>
+            <th>Alert Date</th>
+            <th>Status</th>
+            <th>Quantity</th>
+            <th>Threshold</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for alert in recent_alerts|slice:":5" %}
+          <tr>
+            <td><strong>{{ alert.part_name }}</strong></td>
+            <td>{{ alert.alert_date|date:"M d, H:i" }}</td>
+            <td>
+              <span class="badge {% if alert.status == 'SENT' %}bg-success{% elif alert.status == 'FAILED' %}bg-danger{% elif alert.status == 'RESOLVED' %}bg-secondary{% else %}bg-warning{% endif %}">
+                {{ alert.get_status_display }}
+              </span>
+            </td>
+            <td>{{ alert.quantity_at_alert }}</td>
+            <td>{{ alert.threshold_at_alert }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if recent_alerts.count > 5 %}
+    <p class="text-muted small mb-0">... and {{ recent_alerts.count|add:"-5" }} more alert{{ recent_alerts.count|add:"-5"|pluralize }}</p>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Parts Table -->
+<div class="card dashboard-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <i class="fas fa-list me-2"></i>Inventory Management
+    </h5>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th><i class="fas fa-cog me-2"></i>Part Name</th>
+            <th><i class="fas fa-boxes me-2"></i>Quantity</th>
+            <th><i class="fas fa-chart-line me-2"></i>Threshold</th>
+            <th><i class="fas fa-truck me-2"></i>Supplier</th>
+            <th><i class="fas fa-tools me-2"></i>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in parts %}
+          <tr class="{% if p.is_low %}table-warning low-stock-indicator{% endif %}">
+            <td class="part-name-cell">
+              <div class="part-name-container">
+                <div class="part-name-text">{{ p.part_name }}</div>
+                {% if p.is_low %}
+                  <span class="badge bg-danger text-white low-stock-badge">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Low Stock
+                  </span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <span class="badge {% if p.is_low %}bg-warning{% else %}bg-success{% endif %}">
+                {{ p.quantity }}
+              </span>
+            </td>
+            <td>{{ p.threshold }}</td>
+            <td>{{ p.supplier|default:"Not specified" }}</td>
+            <td>
+              <div class="btn-group" role="group">
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'spare_edit' p.pk %}" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form method="post" action="{% url 'spare_delete' p.pk %}" style="display:inline" 
+                      onsubmit="return confirm('Are you sure you want to delete {{ p.part_name }}?')">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-danger" type="submit" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-4">
+              <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+              <p class="text-muted">No spare parts found. <a href="{% url 'spare_add' %}">Add your first part</a></p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+let stockChart, supplierChart, supplierPerformanceChart;
+
+// Initialize charts on page load
+document.addEventListener('DOMContentLoaded', function() {
+  loadChartData();
+  
+  // Add event listeners to filters
+  document.getElementById('supplierFilter').addEventListener('change', loadChartData);
+  document.getElementById('statusFilter').addEventListener('change', loadChartData);
+  document.getElementById('resetFilters').addEventListener('click', function() {
+    document.getElementById('supplierFilter').value = 'all';
+    document.getElementById('statusFilter').value = 'all';
+    loadChartData();
+  });
+});
+
+function loadChartData() {
+  const supplier = document.getElementById('supplierFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  
+  // Build API URL with filters
+  const url = `/api/chart-data/?supplier=${supplier}&status=${status}`;
+  
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      updateKPIs(data.kpis);
+      updateStockChart(data.parts);
+      updateSupplierChart(data.supplier_stats);
+      updateSupplierPerformanceChart(data.supplier_stats);
+      updateAnalyticsTable(data.parts);
+      generateInsights(data); // Generate AI insights
+    })
+    .catch(error => {
+      console.error('Error loading chart data:', error);
+    });
+}
+
+function generateInsights(data) {
+  const kpis = data.kpis;
+  const parts = data.parts;
+  const supplierStats = data.supplier_stats;
+  
+  let insights = [];
+  let recommendations = [];
+  let warnings = [];
+  
+  // Overall Health Analysis
+  const healthPercentage = kpis.health_percentage;
+  if (healthPercentage >= 90) {
+    insights.push({
+      icon: 'fa-trophy text-success',
+      title: 'Excellent Inventory Health',
+      text: `Your inventory is in excellent condition with ${healthPercentage}% healthy stock levels. Keep up the great work!`
+    });
+  } else if (healthPercentage >= 70) {
+    insights.push({
+      icon: 'fa-thumbs-up text-info',
+      title: 'Good Inventory Health',
+      text: `Inventory health at ${healthPercentage}% is satisfactory, but there's room for improvement.`
+    });
+  } else if (healthPercentage >= 50) {
+    warnings.push({
+      icon: 'fa-exclamation-circle text-warning',
+      title: 'Moderate Risk Level',
+      text: `Only ${healthPercentage}% of inventory is well-stocked. ${kpis.low_stock} items need immediate attention.`
+    });
+  } else {
+    warnings.push({
+      icon: 'fa-exclamation-triangle text-danger',
+      title: 'Critical Inventory Status',
+      text: `⚠️ URGENT: Only ${healthPercentage}% inventory health! ${kpis.low_stock} items are critically low.`
+    });
+  }
+  
+  // Low Stock Analysis
+  if (kpis.low_stock > 0) {
+    const percentage = Math.round((kpis.low_stock / kpis.total_parts) * 100);
+    if (percentage > 30) {
+      warnings.push({
+        icon: 'fa-chart-line text-danger',
+        title: 'High Low-Stock Rate',
+        text: `${percentage}% of parts (${kpis.low_stock} items) are below threshold. This indicates systematic restocking issues.`
+      });
+      recommendations.push({
+        icon: 'fa-clipboard-check text-primary',
+        title: 'Immediate Action Required',
+        text: 'Review and update reorder points for frequently low-stock items. Consider automated restocking.'
+      });
+    } else if (percentage > 15) {
+      warnings.push({
+        icon: 'fa-chart-line text-warning',
+        title: 'Elevated Low-Stock Rate',
+        text: `${percentage}% of inventory (${kpis.low_stock} items) needs restocking soon.`
+      });
+    }
+  } else {
+    insights.push({
+      icon: 'fa-check-circle text-success',
+      title: 'Zero Low-Stock Items',
+      text: '🎉 Congratulations! All inventory items are above threshold levels. Excellent inventory management!'
+    });
+  }
+  
+  // Supplier Concentration Analysis
+  if (supplierStats.length > 0) {
+    const topSupplier = supplierStats[0];
+    const topSupplierPercentage = Math.round((topSupplier.part_count / kpis.total_parts) * 100);
+    
+    if (topSupplierPercentage > 50) {
+      warnings.push({
+        icon: 'fa-truck text-warning',
+        title: 'High Supplier Dependency',
+        text: `${topSupplierPercentage}% of parts come from "${topSupplier.supplier}". Consider diversifying suppliers to reduce risk.`
+      });
+      recommendations.push({
+        icon: 'fa-network-wired text-info',
+        title: 'Diversification Strategy',
+        text: 'Identify alternative suppliers for critical parts to mitigate supply chain disruption risks.'
+      });
+    } else if (supplierStats.length === 1) {
+      warnings.push({
+        icon: 'fa-truck text-danger',
+        title: 'Single Supplier Risk',
+        text: 'All parts come from one supplier. This creates significant supply chain vulnerability.'
+      });
+    } else if (supplierStats.length >= 5) {
+      insights.push({
+        icon: 'fa-network-wired text-success',
+        title: 'Good Supplier Diversity',
+        text: `Working with ${supplierStats.length} suppliers provides good supply chain resilience.`
+      });
+    }
+  }
+  
+  // Critical Items Analysis
+  const criticalItems = parts.filter(p => p.quantity === 0 || p.quantity < p.threshold * 0.5);
+  if (criticalItems.length > 0) {
+    warnings.push({
+      icon: 'fa-exclamation-triangle text-danger',
+      title: 'Critical Stock Levels Detected',
+      text: `${criticalItems.length} item(s) are at critically low levels (below 50% of threshold or out of stock).`
+    });
+    
+    const criticalNames = criticalItems.slice(0, 3).map(p => p.part_name).join(', ');
+    recommendations.push({
+      icon: 'fa-ambulance text-danger',
+      title: 'Emergency Restocking',
+      text: `Priority restock needed: ${criticalNames}${criticalItems.length > 3 ? ` and ${criticalItems.length - 3} more` : ''}.`
+    });
+  }
+  
+  // Overstocked Items Analysis
+  const overstocked = parts.filter(p => p.quantity > p.threshold * 3);
+  if (overstocked.length > 0) {
+    const overstockPercentage = Math.round((overstocked.length / parts.length) * 100);
+    if (overstockPercentage > 20) {
+      insights.push({
+        icon: 'fa-warehouse text-info',
+        title: 'Potential Overstock Situation',
+        text: `${overstocked.length} items (${overstockPercentage}%) have quantities 3x above threshold. Review for cost optimization.`
+      });
+      recommendations.push({
+        icon: 'fa-money-bill-wave text-success',
+        title: 'Optimize Inventory Costs',
+        text: 'Consider reducing order quantities for overstocked items to free up capital and storage space.'
+      });
+    }
+  }
+  
+  // Supplier Performance Insights
+  if (supplierStats.length > 1) {
+    const avgQuantityPerSupplier = supplierStats.reduce((sum, s) => sum + s.total_quantity, 0) / supplierStats.length;
+    const topPerformers = supplierStats.filter(s => s.total_quantity > avgQuantityPerSupplier);
+    
+    if (topPerformers.length > 0) {
+      insights.push({
+        icon: 'fa-star text-warning',
+        title: 'Top Performing Suppliers',
+        text: `${topPerformers.map(s => s.supplier).slice(0, 2).join(' and ')} are supplying above-average quantities.`
+      });
+    }
+  }
+  
+  // Overall Recommendations
+  if (kpis.total_parts < 10) {
+    recommendations.push({
+      icon: 'fa-plus-circle text-info',
+      title: 'Expand Inventory',
+      text: 'Consider adding more parts to improve operational flexibility and reduce downtime risks.'
+    });
+  }
+  
+  if (warnings.length === 0 && kpis.low_stock === 0) {
+    insights.push({
+      icon: 'fa-shield-alt text-success',
+      title: 'Optimal Inventory Management',
+      text: '✨ Your inventory is well-managed with no immediate concerns. Continue monitoring regularly.'
+    });
+  }
+  
+  // Render insights
+  renderInsights(insights, warnings, recommendations);
+}
+
+function renderInsights(insights, warnings, recommendations) {
+  const insightsDiv = document.getElementById('aiInsights');
+  const contentDiv = document.getElementById('insightsContent');
+  
+  if (insights.length === 0 && warnings.length === 0 && recommendations.length === 0) {
+    insightsDiv.style.display = 'none';
+    return;
+  }
+  
+  let html = '<div class="row">';
+  
+  // Warnings Column (Critical)
+  if (warnings.length > 0) {
+    html += '<div class="col-md-4 mb-3">';
+    html += '<h6 class="text-danger mb-3"><i class="fas fa-exclamation-triangle me-2"></i>Warnings & Risks</h6>';
+    warnings.forEach(item => {
+      html += `
+        <div class="insight-item border-start border-danger border-3 ps-3 mb-3">
+          <div class="mb-1"><i class="fas ${item.icon} me-2"></i><strong>${item.title}</strong></div>
+          <small class="text-muted">${item.text}</small>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  // Insights Column (Information)
+  if (insights.length > 0) {
+    html += '<div class="col-md-4 mb-3">';
+    html += '<h6 class="text-info mb-3"><i class="fas fa-info-circle me-2"></i>Key Insights</h6>';
+    insights.forEach(item => {
+      html += `
+        <div class="insight-item border-start border-info border-3 ps-3 mb-3">
+          <div class="mb-1"><i class="fas ${item.icon} me-2"></i><strong>${item.title}</strong></div>
+          <small class="text-muted">${item.text}</small>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  // Recommendations Column (Actions)
+  if (recommendations.length > 0) {
+    html += '<div class="col-md-4 mb-3">';
+    html += '<h6 class="text-primary mb-3"><i class="fas fa-lightbulb me-2"></i>Recommendations</h6>';
+    recommendations.forEach(item => {
+      html += `
+        <div class="insight-item border-start border-primary border-3 ps-3 mb-3">
+          <div class="mb-1"><i class="fas ${item.icon} me-2"></i><strong>${item.title}</strong></div>
+          <small class="text-muted">${item.text}</small>
+        </div>
+      `;
+    });
+    html += '</div>';
+  }
+  
+  html += '</div>';
+  
+  // Add summary stats
+  html += '<hr class="my-3">';
+  html += '<div class="text-center text-muted small">';
+  html += '<i class="fas fa-chart-bar me-2"></i>';
+  html += `Analysis based on ${insights.length + warnings.length + recommendations.length} data points • `;
+  html += 'Auto-updated with filters • ';
+  html += 'Last updated: ' + new Date().toLocaleTimeString();
+  html += '</div>';
+  
+  contentDiv.innerHTML = html;
+  insightsDiv.style.display = 'block';
+}
+
+function updateKPIs(kpis) {
+  document.getElementById('kpiTotalParts').textContent = kpis.total_parts;
+  document.getElementById('kpiLowStock').textContent = kpis.low_stock;
+  document.getElementById('kpiWellStocked').textContent = kpis.well_stocked;
+  document.getElementById('kpiHealthPercentage').textContent = kpis.health_percentage + '%';
+}
+
+function updateStockChart(parts) {
+  // Take top 10 parts only
+  const top10 = parts.slice(0, 10);
+  
+  const labels = top10.map(p => p.part_name);
+  const quantities = top10.map(p => p.quantity);
+  const thresholds = top10.map(p => p.threshold);
+  
+  // Color coding: red if below threshold, yellow if near threshold, green if healthy
+  const backgroundColors = top10.map(p => {
+    if (p.quantity < p.threshold) return 'rgba(220, 53, 69, 0.8)'; // Red
+    if (p.quantity < p.threshold * 1.2) return 'rgba(255, 193, 7, 0.8)'; // Yellow
+    return 'rgba(40, 167, 69, 0.8)'; // Green
+  });
+  
+  if (stockChart) {
+    stockChart.destroy();
+  }
+  
+  const ctx = document.getElementById('stockChart').getContext('2d');
+  stockChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Current Quantity',
+          data: quantities,
+          backgroundColor: backgroundColors,
+          borderColor: backgroundColors.map(c => c.replace('0.8', '1')),
+          borderWidth: 2
+        },
+        {
+          label: 'Threshold',
+          data: thresholds,
+          type: 'line',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          borderWidth: 3,
+          pointRadius: 5,
+          pointHoverRadius: 7
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top'
+        },
+        tooltip: {
+          callbacks: {
+            afterLabel: function(context) {
+              const part = top10[context.dataIndex];
+              if (context.dataset.label === 'Current Quantity') {
+                if (part.quantity < part.threshold) {
+                  return '⚠️ LOW STOCK';
+                } else if (part.quantity < part.threshold * 1.2) {
+                  return '⚡ Near Threshold';
+                } else {
+                  return '✅ Healthy Stock';
+                }
+              }
+              return '';
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Quantity'
+          }
+        }
+      }
+    }
+  });
+}
+
+function updateSupplierChart(supplierStats) {
+  const labels = supplierStats.map(s => s.supplier);
+  const data = supplierStats.map(s => s.part_count);
+  
+  // Generate colors
+  const colors = generateColors(supplierStats.length);
+  
+  if (supplierChart) {
+    supplierChart.destroy();
+  }
+  
+  const ctx = document.getElementById('supplierChart').getContext('2d');
+  supplierChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: colors.background,
+        borderColor: colors.border,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom'
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.parsed || 0;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = Math.round((value / total) * 100);
+              return `${label}: ${value} parts (${percentage}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function updateSupplierPerformanceChart(supplierStats) {
+  const labels = supplierStats.map(s => s.supplier);
+  const data = supplierStats.map(s => s.total_quantity);
+  
+  if (supplierPerformanceChart) {
+    supplierPerformanceChart.destroy();
+  }
+  
+  const ctx = document.getElementById('supplierPerformanceChart').getContext('2d');
+  supplierPerformanceChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Total Quantity Supplied',
+        data: data,
+        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      indexAxis: 'y',
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            afterLabel: function(context) {
+              const supplier = supplierStats[context.dataIndex];
+              return `Parts: ${supplier.part_count}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Total Quantity'
+          }
+        }
+      }
+    }
+  });
+}
+
+function updateAnalyticsTable(parts) {
+  const tbody = document.getElementById('analyticsTableBody');
+  tbody.innerHTML = '';
+  
+  parts.forEach(part => {
+    const isLow = part.quantity < part.threshold;
+    const statusBadge = isLow 
+      ? '<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i>Low Stock</span>'
+      : '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Well Stocked</span>';
+    
+    const row = `
+      <tr class="${isLow ? 'table-warning' : ''}">
+        <td><strong>${part.part_name}</strong></td>
+        <td><span class="badge ${isLow ? 'bg-warning' : 'bg-success'}">${part.quantity}</span></td>
+        <td>${part.threshold}</td>
+        <td>${part.supplier || 'Not specified'}</td>
+        <td>${statusBadge}</td>
+      </tr>
+    `;
+    tbody.innerHTML += row;
+  });
+  
+  if (parts.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No parts match the selected filters</td></tr>';
+  }
+}
+
+function generateColors(count) {
+  const colors = [
+    { bg: 'rgba(255, 99, 132, 0.8)', border: 'rgba(255, 99, 132, 1)' },
+    { bg: 'rgba(54, 162, 235, 0.8)', border: 'rgba(54, 162, 235, 1)' },
+    { bg: 'rgba(255, 206, 86, 0.8)', border: 'rgba(255, 206, 86, 1)' },
+    { bg: 'rgba(75, 192, 192, 0.8)', border: 'rgba(75, 192, 192, 1)' },
+    { bg: 'rgba(153, 102, 255, 0.8)', border: 'rgba(153, 102, 255, 1)' },
+    { bg: 'rgba(255, 159, 64, 0.8)', border: 'rgba(255, 159, 64, 1)' },
+    { bg: 'rgba(201, 203, 207, 0.8)', border: 'rgba(201, 203, 207, 1)' }
+  ];
+  
+  const result = { background: [], border: [] };
+  for (let i = 0; i < count; i++) {
+    const color = colors[i % colors.length];
+    result.background.push(color.bg);
+    result.border.push(color.border);
+  }
+  
+  return result;
+}
+</script>
+
+<style>
+.kpi-card {
+  padding: 25px;
+  border-radius: 10px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.kpi-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  opacity: 0.9;
+}
+
+.kpi-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.kpi-label {
+  font-size: 1rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.chart-card {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: none;
+  margin-bottom: 20px;
+}
+
+.chart-card .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+}
+
+#analyticsTable tbody tr {
+  transition: background-color 0.2s;
+}
+
+#analyticsTable tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* AI Insights Styling */
+#aiInsights {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-left: 5px solid #ffc107 !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+.insight-item {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.insight-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.insight-item strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+}
+
+.insight-item small {
+  line-height: 1.5;
+  display: block;
+}
+
+/* Pulsing animation for critical warnings */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.border-danger {
+  animation: pulse 2s infinite;
+}
+</style>
+{% endblock %}

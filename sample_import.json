@@ -1,0 +1,32 @@
+[
+  {
+    "Part Name": "Motor Assembly 500",
+    "Quantity": 15,
+    "Threshold": 20,
+    "Supplier": "Industrial Motors Inc"
+  },
+  {
+    "Part Name": "Hydraulic Pump 750",
+    "Quantity": 8,
+    "Threshold": 10,
+    "Supplier": "Fluid Systems Corp"
+  },
+  {
+    "Part Name": "Steel Cable 10mm",
+    "Quantity": 120,
+    "Threshold": 30,
+    "Supplier": "Cable Works Ltd"
+  },
+  {
+    "Part Name": "Control Valve V45",
+    "Quantity": 25,
+    "Threshold": 15,
+    "Supplier": "Valve Solutions"
+  },
+  {
+    "Part Name": "Safety Switch SW100",
+    "Quantity": 45,
+    "Threshold": 25,
+    "Supplier": "ElectroSafe Co"
+  }
+]

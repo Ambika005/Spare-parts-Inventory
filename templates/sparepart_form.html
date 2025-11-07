@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card dashboard-card">
+      <div class="card-header">
+        <h4 class="mb-0">
+          {% if action == 'Add' %}
+            <i class="fas fa-plus me-2"></i>{{ action }} New Spare Part
+          {% elif action == 'Edit' %}
+            <i class="fas fa-edit me-2"></i>{{ action }} Spare Part
+          {% elif action == 'Delete' %}
+            <i class="fas fa-trash me-2"></i>{{ action }} Spare Part
+          {% else %}
+            <i class="fas fa-edit me-2"></i>{{ action }}
+          {% endif %}
+        </h4>
+      </div>
+      <div class="card-body">
+        {% if form %}
+        <!-- Add/Edit Form -->
+        <form method="post" class="form-container">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.part_name.id_for_label }}" class="form-label">
+                <i class="fas fa-cog me-2"></i>Part Name
+              </label>
+              {{ form.part_name }}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.supplier.id_for_label }}" class="form-label">
+                <i class="fas fa-truck me-2"></i>Supplier
+              </label>
+              {{ form.supplier }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.quantity.id_for_label }}" class="form-label">
+                <i class="fas fa-boxes me-2"></i>Current Quantity
+              </label>
+              {{ form.quantity }}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="{{ form.threshold.id_for_label }}" class="form-label">
+                <i class="fas fa-chart-line me-2"></i>Minimum Threshold
+              </label>
+              {{ form.threshold }}
+            </div>
+          </div>
+          <div class="d-flex justify-content-between">
+            <a href="{% if user.groups.all.0.name == 'Admin' %}{% url 'admin_dashboard' %}{% else %}{% url 'technician_dashboard' %}{% endif %}" 
+               class="btn btn-secondary">
+              <i class="fas fa-arrow-left me-2"></i>Cancel
+            </a>
+            <button class="btn btn-primary" type="submit">
+              <i class="fas fa-save me-2"></i>{{ action }} Part
+            </button>
+          </div>
+        </form>
+        
+        {% elif part and action == 'Delete' %}
+        <!-- Delete Confirmation -->
+        <div class="text-center">
+          <i class="fas fa-exclamation-triangle fa-4x text-warning mb-4"></i>
+          <h5>Confirm Deletion</h5>
+          <p class="lead">Are you sure you want to delete <strong>{{ part.part_name }}</strong>?</p>
+          <p class="text-muted">This action cannot be undone.</p>
+          
+          <div class="d-flex justify-content-center gap-3 mt-4">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+              <i class="fas fa-times me-2"></i>Cancel
+            </a>
+            <form method="post" style="display:inline;">
+              {% csrf_token %}
+              <button class="btn btn-danger" type="submit">
+                <i class="fas fa-trash me-2"></i>Yes, Delete
+              </button>
+            </form>
+          </div>
+        </div>
+        
+        {% elif part %}
+        <!-- Update Quantity Form -->
+        <div class="text-center mb-4">
+          <h5>Update Stock for: <strong>{{ part.part_name }}</strong></h5>
+          <p class="text-muted">Current Stock: <span class="badge bg-info fs-6">{{ part.quantity }}</span></p>
+        </div>
+        
+        <form method="post">
+          {% csrf_token %}
+          <div class="row justify-content-center">
+            <div class="col-md-6">
+              <div class="mb-4">
+                <label for="quantity" class="form-label">
+                  <i class="fas fa-boxes me-2"></i>Quantity
+                </label>
+                <input type="number" name="quantity" class="form-control form-control-lg text-center" 
+                       value="{{ part.quantity }}" min="0" required>
+              </div>
+              
+              <div class="d-grid gap-2">
+                <button name="action" value="use" class="btn btn-warning btn-lg">
+                  <i class="fas fa-minus me-2"></i>Mark as Used
+                </button>
+                <button name="action" value="restock" class="btn btn-success btn-lg">
+                  <i class="fas fa-plus me-2"></i>Add to Stock
+                </button>
+                <button name="action" value="set" class="btn btn-info btn-lg">
+                  <i class="fas fa-edit me-2"></i>Set Exact Quantity
+                </button>
+              </div>
+              
+              <div class="mt-3 text-center">
+                <a href="{% url 'technician_dashboard' %}" class="btn btn-secondary">
+                  <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+              </div>
+            </div>
+          </div>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
